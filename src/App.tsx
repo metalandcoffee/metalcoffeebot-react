@@ -1,9 +1,26 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import viteLogo from '/coffee-cup.png'
+import TwitchWebSocket from './components/TwitchWebSocket';
 import './App.css'
 
 function App() {
   const [count, setCount] = useState(0)
+
+  // useRef for persistence across re-renders and so event handlers can keep a stable reference.
+  const wsRef = useRef<TwitchWebSocket>( new TwitchWebSocket() );
+  // const keepaliveTimeoutRef = useRef(null);
+  
+
+  // Note: When Strict Mode is on, React will also run one extra
+  // setup+cleanup cycle in development for every Effect. 
+  useEffect( () => {
+    wsRef.current.connect();
+
+    // Cleanup.
+    return () => {
+      wsRef.current.disconnect();
+    };
+  }, []);
 
   return (
     <>
