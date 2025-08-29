@@ -4,11 +4,12 @@ import TwitchWebSocket from './components/TwitchWebSocket';
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
-
-  // useRef for persistence across re-renders and so event handlers can keep a stable reference.
-  const wsRef = useRef<TwitchWebSocket>( new TwitchWebSocket() );
   // const keepaliveTimeoutRef = useRef(null);
+  const [sessionId, setSessionId] = useState('');
+  // useRef for persistence across re-renders and so event handlers can keep a stable reference.
+  const wsRef = useRef<TwitchWebSocket>(
+    new TwitchWebSocket(setSessionId)
+  );
   
 
   // Note: When Strict Mode is on, React will also run one extra
@@ -31,9 +32,6 @@ function App() {
       </div>
       <h1>Vite + React</h1>
       <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
         <p>
           Edit <code>src/App.tsx</code> and save to test HMR
         </p>

@@ -1,28 +1,33 @@
 export default class TwitchWebSocket {
 
-    private ws: WebSocket | null = null;
-    private readonly url = 'wss://eventsub.wss.twitch.tv/ws';
+    // Using TypeScript feature "parameter properties"
+    constructor(
+        private setSessionId: (sessionId: string) => void,
+        private ws: WebSocket | null = null,
+        private readonly url = 'wss://eventsub.wss.twitch.tv/ws'
+    ) {
+        this.setSessionId = setSessionId;
+    }
 
-    // i want to see keepalives and then work on how to
-    // handle heartbeat and then reconnecting if connection
-    // is assumed dead
-    // I need to subscribe to an event or the connection will
-    // close in 10 seconds
-
-
-    constructor() {}
     connect() {
         try {
             this.ws = new WebSocket(this.url);
             this.ws.onopen = (e) => {
                 console.log(e);
-                console.log('Connected to Twitch EventSub WebSocket');
+                console.log( 'Connected to Twitch EventSub WebSocket');
             };
 
             this.ws.onmessage = (e) => {
                 // call method that evaluates message type.
+                // if its welcome message, get session id and save it.
                 const message = JSON.parse(e.data);
                 console.log(message);
+                switch (message.metadata.message_type) {
+                    case 'session_welcome':
+                    // Store the session ID for creating subscriptions
+                    this.setSessionId(message.payload.session.id);
+                }
+                
             };
         } catch (error) {
             console.error('Failed to connect:', error);
@@ -33,24 +38,6 @@ export default class TwitchWebSocket {
         this.ws?.close();
         console.log('Disconnected from Twitch EventSub WebSocket');
     }
-
-const response = await fetch('https://api.twitch.tv/helix/eventsub/subscriptions', {
-        method: 'POST',
-        headers: {
-          'Client-ID': 'YOUR_CLIENT_ID', // Replace with your actual client ID
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          type: subscriptionType,
-          version: '1',
-          condition: condition,
-          transport: {
-            method: 'websocket',
-            session_id: sessionId
-          }
-        })
-      });
 
 //     const resetKeepaliveTimeout = (timeout) => {
 //     if (keepaliveTimeoutRef.current) {
